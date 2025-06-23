@@ -1,4 +1,4 @@
-# Frontend & AI Customer Service
+# ChatNap - AI Customer Service
 
 This repository contains two main components for a comprehensive beauty service platform:
 
