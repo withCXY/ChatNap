@@ -11,7 +11,7 @@ Multi-agent customer service system built with **Google Agent Development Kit (A
 - **Support Agent**: Greetings and basic customer inquiries
 - **RAG Agent**: Knowledge retrieval and FAQ responses  
 - **Booking Agent**: Appointment scheduling and calendar management
-- **Portfolio Agent**: Image analysis and style matching for nail art services
+- **Portfolio Agent**: Image analysis and style matching for services like nail art
 
 ## 🏗️ System Architecture
 
