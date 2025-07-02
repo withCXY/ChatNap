@@ -48,29 +48,48 @@ export default function MessageThread() {
 
     // Create or initialize session using ADK API
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    
+    // First try to get existing session
     fetch(`${apiUrl}/apps/ai_customer_service/users/${userId}/sessions/${sessionIdFromStorage}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        state: {
-          user_name: null,
-          user_email: null,
-          user_phone: null,
-          user_platform: null,
-          user_profile_complete: false,
-          is_first_interaction: true
-        }
-      })
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     }).then(res => {
       if (res.ok) {
-        console.log('✅ Session created successfully');
-      } else if (res.status === 400) {
-        console.log('ℹ️ Session already exists - continuing with existing session');
+        console.log('✅ Session found - using existing session');
+      } else if (res.status === 404) {
+        // Session doesn't exist, create new one
+        return fetch(`${apiUrl}/apps/ai_customer_service/users/${userId}/sessions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            state: {
+              user_name: null,
+              user_email: null,
+              user_phone: null,
+              user_platform: null,
+              user_profile_complete: false,
+              is_first_interaction: true
+            }
+          })
+        }).then(createRes => {
+          if (createRes.ok) {
+            return createRes.json().then(sessionData => {
+              // Update session ID with the one returned from backend
+              const newSessionId = sessionData.id;
+              localStorage.setItem('sessionId', newSessionId);
+              setSessionId(newSessionId);
+              console.log('✅ New session created:', newSessionId);
+            });
+          } else {
+            throw new Error(`Failed to create session: ${createRes.status}`);
+          }
+        });
       } else {
-        console.warn('⚠️ Unexpected response from session creation:', res.status);
+        throw new Error(`Unexpected response: ${res.status}`);
       }
     }).catch(err => {
       console.error('❌ Failed to initialize session:', err);
+      // Continue with existing sessionId as fallback
     });
 
     const info = localStorage.getItem('userInfo');
@@ -174,16 +193,27 @@ export default function MessageThread() {
     try {
       console.log('🚀 Sending message to ADK /run endpoint...');
       
+      // Build parts array correctly 
+      const parts = [];
+      if (content) {
+        parts.push({ text: content });
+      }
+      if (imageBase64) {
+        parts.push({ 
+          inline_data: { 
+            mime_type: 'image/png', 
+            data: imageBase64.split(',')[1] 
+          } 
+        });
+      }
+
       const requestBody = {
         appName: 'ai_customer_service',
         userId,
         sessionId,
         newMessage: {
           role: 'user',
-          parts: [imageBase64
-            ? { inline_data: { mime_type: 'image/png', data: imageBase64.split(',')[1] } }
-            : { text: content }
-          ]
+          parts: parts
         }
       };
 

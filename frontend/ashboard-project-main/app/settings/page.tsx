@@ -191,14 +191,11 @@ export default function SettingsPage() {
       for (const file of basicInfoFiles) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('document_type', 'faq');
-        formData.append('session_id', 'merchant');
-
-        const response = await fetch('http://localhost:8000/api/merchant/upload-document', {
+        formData.append('merchant_email', businessProfile.contact.email);
+        const response = await fetch('/api/merchant/upload-document', {
           method: 'POST',
           body: formData
         });
-
         if (response.ok) {
           const result = await response.json();
           uploadedFiles.push(result);
@@ -212,80 +209,100 @@ export default function SettingsPage() {
       const businessSettingsData = {
         business_name: businessProfile.companyName,
         address: `${businessProfile.address.street} ${businessProfile.address.suite}`.trim(),
-        phone: businessProfile.contact.phone,
-        email: businessProfile.contact.email,
-        description: `Business with services: ${pricingItems.map(item => item.name).join(', ')}`
+        working_hours: businessProfile.businessHours
+          .filter(hour => hour.day && hour.hours)
+          .map(hour => `${hour.day} ${hour.hours}`)
+          .join('; '),
+        phone_number: businessProfile.contact.phone,
+        contact_email: businessProfile.contact.email
       };
-
-      const settingsResponse = await fetch('http://localhost:8000/api/merchant/settings', {
+      const settingsResponse = await fetch('/api/merchant/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(businessSettingsData)
       });
 
       // 3. Save business hours
-      const businessHoursData = businessProfile.businessHours
+      const businessHoursString = businessProfile.businessHours
         .filter(hour => hour.day && hour.hours)
-        .map((hour, index) => ({
-          day_of_week: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(hour.day),
-          open_time: hour.hours.split(' - ')[0] || '09:00',
-          close_time: hour.hours.split(' - ')[1] || '17:00',
-          is_open: true
-        }));
+        .map(hour => `${hour.day} ${hour.hours}`)
+        .join('; ');
+      const businessHoursData = {
+        contact_email: businessProfile.contact.email,
+        working_hours: businessHoursString
+      };
+      await fetch('/api/merchant/business-hours', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(businessHoursData)
+      });
 
-      if (businessHoursData.length > 0) {
-        const hoursResponse = await fetch('http://localhost:8000/api/merchant/business-hours', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(businessHoursData)
-        });
-      }
-
-      // 4. Save service pricing to database (could be added to merchant_settings as JSON)
-      const pricingData = pricingItems
-        .filter(item => item.name && item.price)
-        .map(item => ({
-          name: item.name,
-          price: parseFloat(item.price) || 0,
-          currency: item.currency
-        }));
-
-      if (pricingData.length > 0) {
-        const pricingResponse = await fetch('http://localhost:8000/api/merchant/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pricing_services: JSON.stringify(pricingData)
-          })
-        });
-      }
-
-      // 5. Save manual FAQs as a document
+      // 4. Save manual FAQs as a document
       if (manualFaqs.length > 0) {
+        console.log('❓ Processing FAQ items:', manualFaqs);
         const faqContent = manualFaqs
           .filter(faq => faq.question && faq.answer)
           .map(faq => `Q: ${faq.question}\nA: ${faq.answer}\n\n`)
           .join('');
-
+        console.log('📄 Generated FAQ content:', faqContent);
         if (faqContent.trim()) {
           const faqBlob = new Blob([faqContent], { type: 'text/plain' });
           const faqFormData = new FormData();
           faqFormData.append('file', faqBlob, 'manual_faqs.txt');
-          faqFormData.append('document_type', 'faq');
-          faqFormData.append('session_id', 'merchant');
-
-          const faqResponse = await fetch('http://localhost:8000/api/merchant/upload-document', {
+          faqFormData.append('merchant_email', businessProfile.contact.email);
+          console.log('📤 Uploading FAQ to backend...');
+          const faqResponse = await fetch('/api/merchant/upload-document', {
             method: 'POST',
             body: faqFormData
           });
+          if (faqResponse.ok) {
+            const faqResult = await faqResponse.json();
+            console.log('✅ FAQ uploaded successfully:', faqResult);
+          } else {
+            console.error('❌ Failed to upload FAQ:', faqResponse.status, faqResponse.statusText);
+          }
+        } else {
+          console.log('⚠️ No valid FAQ content to save');
         }
+      } else {
+        console.log('ℹ️ No FAQ items to save');
       }
 
-      alert("✅ All settings saved successfully! Your AI agent can now use this information to help customers.");
-      
+      // 5. Save service pricing as a document
+      if (pricingItems.length > 0) {
+        console.log('📊 Processing pricing items:', pricingItems);
+        const pricingContent = pricingItems
+          .filter(item => item.name && item.price)
+          .map(item => `Service: ${item.name}\nPrice: ${item.price} ${item.currency}\n\n`)
+          .join('');
+        console.log('📄 Generated pricing content:', pricingContent);
+        if (pricingContent.trim()) {
+          const pricingBlob = new Blob([pricingContent], { type: 'text/plain' });
+          const pricingFormData = new FormData();
+          pricingFormData.append('file', pricingBlob, 'service_pricing.txt');
+          pricingFormData.append('merchant_email', businessProfile.contact.email);
+          console.log('📤 Uploading service pricing to backend...');
+          const pricingResponse = await fetch('/api/merchant/upload-document', {
+            method: 'POST',
+            body: pricingFormData
+          });
+          if (pricingResponse.ok) {
+            const pricingResult = await pricingResponse.json();
+            console.log('✅ Service pricing uploaded successfully:', pricingResult);
+          } else {
+            console.error('❌ Failed to upload service pricing:', pricingResponse.status, pricingResponse.statusText);
+          }
+        } else {
+          console.log('⚠️ No valid pricing content to save');
+        }
+      } else {
+        console.log('ℹ️ No pricing items to save');
+      }
+
+      alert('✅ All settings saved successfully! Your AI agent can now use this information to help customers.');
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert("❌ Some settings failed to save. Please check the console for details.");
+      alert('❌ Some settings failed to save. Please check the console for details.');
     }
   };
 

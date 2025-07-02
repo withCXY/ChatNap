@@ -17,340 +17,6 @@ interface ChatHistoryModalProps {
   customerName: string;
 }
 
-// Mock chat data based on customer ID
-const getMockChatHistory = (customerId: string): ChatMessage[] => {
-  const chatData: Record<string, ChatMessage[]> = {
-    'cus_mock_shopify_test': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'Hi, I want to know about your new product features.',
-        timestamp: '2024-01-15T09:00:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'Hello! I\'d be happy to tell you about our new features. We\'ve recently added advanced analytics and improved user interface.',
-        timestamp: '2024-01-15T09:01:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'That sounds interesting! Can you give me more details?',
-        timestamp: '2024-01-15T09:02:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'Certainly! Our new analytics dashboard provides real-time insights into customer behavior, and the new UI is more intuitive and responsive.',
-        timestamp: '2024-01-15T09:03:00Z',
-        avatar: '/api/placeholder/32/32'
-      }
-    ],
-    'cus_henry_evans': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'What\'s your return policy? I need to return an item.',
-        timestamp: '2024-01-14T14:30:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'Our return policy allows returns within 30 days of purchase. Items must be in original condition with tags attached.',
-        timestamp: '2024-01-14T14:31:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'I bought this item 2 weeks ago but lost the receipt. Can I still return it?',
-        timestamp: '2024-01-14T14:32:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'If you have the order number or purchased online, we can look up your purchase. Let me transfer you to our returns specialist.',
-        timestamp: '2024-01-14T14:33:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '5',
-        sender: 'user',
-        message: 'Thank you, I\'ll wait for the specialist.',
-        timestamp: '2024-01-14T14:34:00Z'
-      }
-    ],
-    'cus_grace_wilson': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'I want to confirm my order and provide shipping details.',
-        timestamp: '2024-01-13T16:15:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'Perfect! I can help you confirm your order. Could you please provide your order number?',
-        timestamp: '2024-01-13T16:16:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'Order #12345. I need it shipped to 123 Main St, New York, NY 10001',
-        timestamp: '2024-01-13T16:17:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'Great! I\'ve updated your shipping address. Your order will be shipped within 2-3 business days. You\'ll receive a tracking number via email.',
-        timestamp: '2024-01-13T16:18:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '5',
-        sender: 'user',
-        message: 'Perfect! Thank you for your help.',
-        timestamp: '2024-01-13T16:19:00Z'
-      }
-    ],
-    'cus_frank_miller': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'I received a defective product. The quality is terrible!',
-        timestamp: '2024-01-12T11:00:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'I\'m very sorry to hear about the quality issue. This is definitely not up to our standards. Let me escalate this to our quality team.',
-        timestamp: '2024-01-12T11:01:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'I want a full refund and compensation for my time!',
-        timestamp: '2024-01-12T11:02:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'I completely understand your frustration. I\'m escalating this to our senior management team who will contact you within 24 hours to resolve this properly.',
-        timestamp: '2024-01-12T11:03:00Z',
-        avatar: '/api/placeholder/32/32'
-      }
-    ],
-    'cus_emily_clark': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'Hi, I\'m a loyal customer. Can I get a discount on my next purchase?',
-        timestamp: '2024-01-11T13:45:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'Hello! We really appreciate your loyalty. Let me check what discounts we can offer you.',
-        timestamp: '2024-01-11T13:46:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'I\'ve been shopping with you for over 2 years now.',
-        timestamp: '2024-01-11T13:47:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'That\'s wonderful! I\'m connecting you with our manager who can provide special pricing for valued customers like yourself.',
-        timestamp: '2024-01-11T13:48:00Z',
-        avatar: '/api/placeholder/32/32'
-      }
-    ],
-    'cus_david_brown': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'Hello, I\'m interested in placing a large order for my business.',
-        timestamp: '2024-01-10T10:20:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'Hello! That\'s great to hear. We love working with business customers. What type of products are you looking for?',
-        timestamp: '2024-01-10T10:21:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'I need about 500 units of your premium product line.',
-        timestamp: '2024-01-10T10:22:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'Excellent! For bulk orders like this, we offer special pricing and dedicated support. Let me get you connected with our business sales team.',
-        timestamp: '2024-01-10T10:23:00Z',
-        avatar: '/api/placeholder/32/32'
-      }
-    ],
-    'cus_cathy_lee': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'My order hasn\'t arrived yet and it\'s been 2 weeks. Where is it?',
-        timestamp: '2024-01-09T15:30:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'I apologize for the delay. Let me track your shipment immediately. Can you provide your order number?',
-        timestamp: '2024-01-09T15:31:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'Order #67890. This is unacceptable!',
-        timestamp: '2024-01-09T15:32:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'I see the issue - there was a shipping delay from our carrier. I\'m escalating this to our logistics supervisor to resolve immediately and provide compensation.',
-        timestamp: '2024-01-09T15:33:00Z',
-        avatar: '/api/placeholder/32/32'
-      }
-    ],
-    'cus_bob_smith': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'Hi, I want to confirm my order is ready for pickup.',
-        timestamp: '2024-01-08T12:00:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'Hello! I can help you with that. Your order has been confirmed and is pending shipment.',
-        timestamp: '2024-01-08T12:01:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'Great! When will it be ready?',
-        timestamp: '2024-01-08T12:02:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'Your order will be ready for pickup tomorrow after 2 PM. We\'ll send you a notification when it\'s ready.',
-        timestamp: '2024-01-08T12:03:00Z',
-        avatar: '/api/placeholder/32/32'
-      }
-    ],
-    'cus_alice_johnson': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'Can you tell me more about this product? I need detailed specifications.',
-        timestamp: '2024-01-07T14:15:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'Of course! I\'d be happy to provide detailed product information. Which specific product are you interested in?',
-        timestamp: '2024-01-07T14:16:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'The premium model X1. I need dimensions and technical specs.',
-        timestamp: '2024-01-07T14:17:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'Here\'s a detailed quote for the X1 model including all specifications. The dimensions are 24"x18"x12" and it includes advanced features like wireless connectivity.',
-        timestamp: '2024-01-07T14:18:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '5',
-        sender: 'user',
-        message: 'Perfect! This is exactly what I was looking for.',
-        timestamp: '2024-01-07T14:19:00Z'
-      }
-    ],
-    '9': [
-      {
-        id: '1',
-        sender: 'user',
-        message: 'Hi! I saw your product in a viral TikTok video. It looks amazing!',
-        timestamp: '2024-01-16T11:30:00Z'
-      },
-      {
-        id: '2',
-        sender: 'bot',
-        message: 'Hello! That\'s wonderful to hear! TikTok has been great for showcasing our products. Which specific product caught your attention?',
-        timestamp: '2024-01-16T11:31:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '3',
-        sender: 'user',
-        message: 'The wireless earbuds! The video showed how good the sound quality is. I want to order in bulk for my store.',
-        timestamp: '2024-01-16T11:32:00Z'
-      },
-      {
-        id: '4',
-        sender: 'bot',
-        message: 'Excellent choice! Our wireless earbuds have been very popular on TikTok. For bulk orders, we offer special wholesale pricing. How many units are you looking to purchase?',
-        timestamp: '2024-01-16T11:33:00Z',
-        avatar: '/api/placeholder/32/32'
-      },
-      {
-        id: '5',
-        sender: 'user',
-        message: 'I\'m thinking around 200-300 units to start with. What kind of discount can you offer?',
-        timestamp: '2024-01-16T11:34:00Z'
-      },
-      {
-        id: '6',
-        sender: 'bot',
-        message: 'For orders of 200+ units, we can offer a 25% wholesale discount. I\'ll connect you with our bulk sales team to finalize the details and arrange shipping.',
-        timestamp: '2024-01-16T11:35:00Z',
-        avatar: '/api/placeholder/32/32'
-      }
-    ]
-  };
-
-  // Return specific chat history for the customer, or default if not found
-  return chatData[customerId] || [
-    {
-      id: '1',
-      sender: 'user',
-      message: 'Hello, I have a question about your services.',
-      timestamp: '2024-01-15T10:00:00Z'
-    },
-    {
-      id: '2',
-      sender: 'bot',
-      message: 'Hello! I\'d be happy to help you. What can I assist you with today?',
-      timestamp: '2024-01-15T10:01:00Z',
-      avatar: '/api/placeholder/32/32'
-    }
-  ];
-};
-
 export default function ChatHistoryModal({ isOpen, onClose, customerId, customerName }: ChatHistoryModalProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -364,33 +30,46 @@ export default function ChatHistoryModal({ isOpen, onClose, customerId, customer
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // 查询聊天记录
+  async function fetchChatHistory(sessionId: string) {
+    const res = await fetch(`/api/chat-history?session_id=${sessionId}`)
+    if (!res.ok) throw new Error('Failed to fetch chat history')
+    const data = await res.json()
+    
+    // 转换数据格式以匹配ChatMessage接口
+    return data.map((msg: any) => ({
+      id: msg.id,
+      sender: msg.sender === 'user' ? 'user' : 'bot',
+      message: msg.content,
+      timestamp: msg.created_at
+    }))
+  }
+
+  // 发送新消息
+  async function postChatMessage(msg: Omit<ChatMessage, 'id' | 'timestamp'> & { user_id: string }) {
+    const res = await fetch('/api/chat-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(msg)
+    })
+    if (!res.ok) throw new Error('Failed to send message')
+    return await res.json()
+  }
+
   useEffect(() => {
     if (isOpen && customerId) {
-      // Reset state when opening modal
       setIsTakenOver(false);
       setNewMessage('');
-      
-      // Simulate API call to fetch conversation history based on customer ID
       setLoading(true);
-      setTimeout(() => {
-        const customerChatHistory = getMockChatHistory(customerId);
-        setMessages(customerChatHistory);
-        setLoading(false);
-      }, 500);
+      fetchChatHistory(customerId)
+        .then((data) => setMessages(data))
+        .catch(() => setMessages([]))
+        .finally(() => setLoading(false));
     }
   }, [isOpen, customerId]);
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    if (isTakenOver && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isTakenOver]);
+  useEffect(() => { if (messages.length > 0) scrollToBottom(); }, [messages]);
+  useEffect(() => { if (isTakenOver && inputRef.current) inputRef.current.focus(); }, [isTakenOver]);
 
   // Handle escape key and outside click
   useEffect(() => {
@@ -423,24 +102,32 @@ export default function ChatHistoryModal({ isOpen, onClose, customerId, customer
     setIsTakenOver(true);
   };
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const merchantMessage: ChatMessage = {
-        id: `merchant_${Date.now()}`,
-        sender: 'merchant',
-        message: newMessage.trim(),
-        timestamp: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, merchantMessage]);
-      setNewMessage('');
-    }
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  // 发送消息逻辑
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !customerId) return;
+    const msg: Omit<ChatMessage, 'id' | 'timestamp'> & { user_id: string } = {
+      sender: 'merchant',
+      message: newMessage,
+      user_id: customerId
+    };
+    setLoading(true);
+    try {
+      await postChatMessage(msg);
+      setNewMessage('');
+      // 重新拉取聊天记录
+      const data = await fetchChatHistory(customerId);
+      setMessages(data);
+    } catch (e) {
+      // 可加错误提示
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -1,0 +1,45 @@
+# Git相关
+.git
+.gitignore
+README.md
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.venv
+.env
+
+# 开发工具
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Frontend文件 (我们只部署后端)
+frontend/
+node_modules/
+
+# 测试和调试文件
+test_*
+debug_*
+*.log
+
+# 临时文件
+*.tmp
+*.temp 

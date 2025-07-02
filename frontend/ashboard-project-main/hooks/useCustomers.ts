@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
-import { supabase, UserProfile, Booking } from '@/lib/supabase'
+// import { supabase, UserProfile, Booking } from '@/lib/supabase'
 
-export interface CustomerData extends UserProfile {
-  bookings?: Booking[]
-  conversationSummary: string
-  interactionStage: 'Ongoing' | 'Escalated' | 'Confirmed'
-  accountStatus: 'Active' | 'Inactive'
+export interface CustomerData {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  platform?: string;
+  created_at?: string;
+  // 其他字段按需补充
 }
 
 export const useCustomers = () => {
@@ -17,53 +20,20 @@ export const useCustomers = () => {
     try {
       setLoading(true)
       setError(null)
-
-      // Get user profiles (simplified query, no need to join bookings)
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      // Transform data format to match existing Customer interface
-      const customersData: CustomerData[] = (data || []).map((profile: any) => ({
-        ...profile,
-        conversationSummary: `Customer from ${profile.platform || 'Unknown platform'}`,
-        interactionStage: 'Ongoing' as const, // Simplified to fixed value
-        accountStatus: 'Active' as const // Simplified to fixed value
-      }))
-
-      setCustomers(customersData)
+      const res = await fetch('/api/customers')
+      if (!res.ok) throw new Error('Failed to fetch customers')
+      const data = await res.json()
+      setCustomers(data || [])
     } catch (err) {
-      console.error('Error fetching customers:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch customers')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchCustomers()
-  }, [])
+  useEffect(() => { fetchCustomers() }, [])
 
-  // Real-time subscription to data changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('customers-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_profiles' },
-        () => {
-          fetchCustomers() // Re-fetch data
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
+  // 实时订阅功能如需保留，可用WebSocket或SSE实现，否则可移除
 
   return { customers, loading, error, refetch: fetchCustomers }
 } 

@@ -29,46 +29,21 @@ export default function BusinessInfo() {
     const fetchBusinessData = async () => {
       try {
         setLoading(true);
-        // TODO: Replace with your actual API endpoint
         const response = await fetch('/api/business-info', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setBusinessData(data);
+        setError(null);
       } catch (err) {
-        console.error('Failed to fetch business data:', err);
         setError('Failed to load business information');
-        
-        // Use default data when error occurs
-        setBusinessData({
-          companyName: "ChatNap",
-          businessHours: [
-            { day: "Monday - Friday", hours: "9:00 AM - 6:00 PM" },
-            { day: "Saturday", hours: "10:00 AM - 4:00 PM" },
-            { day: "Sunday", hours: "Closed" }
-          ],
-          address: {
-            street: "123 Business Street",
-            suite: "Suite 1001, Tech Park"
-          },
-          contact: {
-            phone: "(123) 456-7890",
-            email: "contact@example.com"
-          }
-        });
+        setBusinessData(null);
       } finally {
         setLoading(false);
       }
     };
-
     fetchBusinessData();
   }, []);
 
@@ -83,12 +58,16 @@ export default function BusinessInfo() {
     );
   }
 
-  if (!businessData) {
+  if (error) {
     return (
       <div className="h-full p-6 text-white flex items-center justify-center">
-        <p>No business information available</p>
+        <p>{error}</p>
       </div>
     );
+  }
+
+  if (!businessData) {
+    return null;
   }
 
   return (
@@ -96,20 +75,18 @@ export default function BusinessInfo() {
       {/* Welcome Message */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Welcome to {businessData.companyName}</h1>
-        {error && (
-          <p className="text-xs text-yellow-300 mt-1">
-            ⚠️ Using cached data
-          </p>
-        )}
       </div>
 
       {/* Business Hours */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Business Hours</h2>
         <div className="space-y-1 text-sm">
-          {businessData.businessHours.map((item, index) => (
-            <p key={index}>{item.day}: {item.hours}</p>
-          ))}
+          {Array.isArray(businessData.businessHours)
+            ? businessData.businessHours.map((item, index) => (
+                <p key={index}>{item.day}: {item.hours}</p>
+              ))
+            : <p>{businessData.businessHours}</p>
+          }
         </div>
       </div>
 

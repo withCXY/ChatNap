@@ -1,5 +1,6 @@
 export interface Customer {
   id: string;
+  sessionId?: string | null;
   name: string;
   platform: string;
   phone: string;

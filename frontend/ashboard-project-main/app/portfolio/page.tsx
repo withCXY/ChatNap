@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 interface PortfolioItem {
   id: string;
@@ -10,20 +10,40 @@ interface PortfolioItem {
   description: string;
   price: string;
   isEditing: boolean;
+  isUploading?: boolean;
 }
 
 export default function PortfolioPage() {
-  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([
-    {
-      id: 'default-item',
-      imageUrl: null,
-      imageFile: null,
-      tags: '',
-      description: '',
-      price: '',
-      isEditing: true,
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [merchantEmail, setMerchantEmail] = useState<string>('test@example.com'); // 这里应该从用户登录状态获取
+
+  // Load existing portfolio items on component mount
+  useEffect(() => {
+    const loadPortfolioItems = async () => {
+      try {
+        const response = await fetch(`/api/portfolio?merchant_email=${encodeURIComponent(merchantEmail)}`);
+        if (response.ok) {
+          const data = await response.json();
+          const items = data.map((item: any) => ({
+            id: item.id,
+            imageUrl: item.image_url,
+            imageFile: null,
+            tags: Array.isArray(item.tags) ? item.tags.join(', ') : item.tags || '',
+            description: item.description || '',
+            price: item.price ? item.price.toString() : '',
+            isEditing: false,
+          }));
+          setPortfolioItems(items);
+        }
+      } catch (error) {
+        console.error('Error loading portfolio items:', error);
+      }
+    };
+
+    if (merchantEmail) {
+      loadPortfolioItems();
     }
-  ]);
+  }, [merchantEmail]);
 
   const handleImageUpload = useCallback((id: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -33,32 +53,6 @@ export default function PortfolioPage() {
       setPortfolioItems(prev =>
         prev.map(item => (item.id === id ? { ...item, imageFile: file, imageUrl: url } : item))
       );
-
-      // Simulate API call to /api/portfolio/analyze
-      // In a real application, you would send the 'file' to your backend here
-      console.log("Simulating API call for image: ", file.name);
-      fetch('/api/portfolio/analyze', {
-        method: 'POST',
-        body: JSON.stringify({ fileName: file.name, fileSize: file.size, fileType: file.type }), // Replace with actual file upload
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .then(response => response.json())
-      .then(data => {
-        // Assuming the API returns { tags: string, description: string, price: string }
-        setPortfolioItems(prev =>
-          prev.map(item =>
-            item.id === id
-              ? { ...item, tags: data.tags || '', description: data.description || '', price: data.price || '' }
-              : item
-          )
-        );
-      })
-      .catch(error => {
-        console.error("Error analyzing image:", error);
-        // Fallback or error handling
-      });
     }
   }, []);
 
@@ -77,29 +71,6 @@ export default function PortfolioPage() {
       setPortfolioItems(prev =>
         prev.map(item => (item.id === id ? { ...item, imageFile: file, imageUrl: url } : item))
       );
-
-      // Simulate API call to /api/portfolio/analyze
-      console.log("Simulating API call for dragged image: ", file.name);
-      fetch('/api/portfolio/analyze', {
-        method: 'POST',
-        body: JSON.stringify({ fileName: file.name, fileSize: file.size, fileType: file.type }), // Replace with actual file upload
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .then(response => response.json())
-      .then(data => {
-        setPortfolioItems(prev =>
-          prev.map(item =>
-            item.id === id
-              ? { ...item, tags: data.tags || '', description: data.description || '', price: data.price || '' }
-              : item
-          )
-        );
-      })
-      .catch(error => {
-        console.error("Error analyzing dragged image:", error);
-      });
     }
   }, []);
 
@@ -122,9 +93,62 @@ export default function PortfolioPage() {
     ]);
   }, []);
 
-  const handleSavePortfolioItem = useCallback((id: string) => {
-    setPortfolioItems(prev => prev.map(item => (item.id === id ? { ...item, isEditing: false } : item)));
-  }, []);
+  const handleSavePortfolioItem = useCallback(async (id: string) => {
+    const item = portfolioItems.find(item => item.id === id);
+    if (!item) return;
+
+    // Check if this is a new item (no imageUrl from server)
+    const isNewItem = !item.imageUrl || item.imageUrl.startsWith('blob:');
+    
+    if (isNewItem && item.imageFile) {
+      // Upload new portfolio item
+      setPortfolioItems(prev => prev.map(item => 
+        item.id === id ? { ...item, isUploading: true } : item
+      ));
+
+      try {
+        const formData = new FormData();
+        formData.append('merchant_email', merchantEmail);
+        formData.append('image', item.imageFile);
+        formData.append('tags', item.tags);
+        formData.append('description', item.description);
+        formData.append('price', item.price);
+
+        const response = await fetch('/api/portfolio-upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          // Update the item with server data
+          setPortfolioItems(prev => prev.map(item => 
+            item.id === id ? { 
+              ...item, 
+              id: result.portfolio_id,
+              imageUrl: result.image_url,
+              isEditing: false,
+              isUploading: false 
+            } : item
+          ));
+          console.log('✅ Portfolio item uploaded successfully');
+        } else {
+          console.error('❌ Failed to upload portfolio item');
+          setPortfolioItems(prev => prev.map(item => 
+            item.id === id ? { ...item, isUploading: false } : item
+          ));
+        }
+      } catch (error) {
+        console.error('Error uploading portfolio item:', error);
+        setPortfolioItems(prev => prev.map(item => 
+          item.id === id ? { ...item, isUploading: false } : item
+        ));
+      }
+    } else {
+      // Just save the editing state for existing items
+      setPortfolioItems(prev => prev.map(item => (item.id === id ? { ...item, isEditing: false } : item)));
+    }
+  }, [portfolioItems, merchantEmail]);
 
   const handleEditPortfolioItem = useCallback((id: string) => {
     setPortfolioItems(prev => prev.map(item => (item.id === id ? { ...item, isEditing: true } : item)));
@@ -156,9 +180,14 @@ export default function PortfolioPage() {
               <div className="flex space-x-2">
                 <button
                   onClick={() => handleSavePortfolioItem(item.id)}
-                  className="px-4 py-2 bg-[#6C5DD3] text-white rounded-md hover:opacity-90 transition-opacity"
+                  disabled={item.isUploading}
+                  className={`px-4 py-2 text-white rounded-md transition-opacity ${
+                    item.isUploading 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-[#6C5DD3] hover:opacity-90'
+                  }`}
                 >
-                  Save
+                  {item.isUploading ? 'Uploading...' : 'Save'}
                 </button>
                 <button
                   onClick={() => handleDeletePortfolioItem(item.id)}

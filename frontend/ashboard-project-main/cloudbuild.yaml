@@ -1,0 +1,13 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_BASE_URL=${_NEXT_PUBLIC_API_BASE_URL}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/dashboard-app'
+      - '.'
+images:
+  - 'gcr.io/$PROJECT_ID/dashboard-app'
+substitutions:
+  _NEXT_PUBLIC_API_BASE_URL: 'https://ai-customer-service-backend-1078006235469.us-central1.run.app' 

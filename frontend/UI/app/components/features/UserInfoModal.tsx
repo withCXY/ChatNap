@@ -7,6 +7,7 @@ export default function UserInfoModal({ onSubmit }: { onSubmit: (info: any) => v
   const [platform, setPlatform] = useState('');
   const [customPlatform, setCustomPlatform] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,7 +22,7 @@ export default function UserInfoModal({ onSubmit }: { onSubmit: (info: any) => v
     }
     
     const finalPlatform = platform === 'Other' ? customPlatform : platform;
-    onSubmit({ name, platform: finalPlatform, phone });
+    onSubmit({ name, platform: finalPlatform, phone, email });
   };
 
   return (
@@ -100,6 +101,24 @@ export default function UserInfoModal({ onSubmit }: { onSubmit: (info: any) => v
           <input 
             value={phone} 
             onChange={e => setPhone(e.target.value)} 
+            type="tel"
+            style={{ 
+              width: '100%', 
+              marginTop: 4, 
+              padding: '8px 12px', 
+              border: '1px solid rgba(255, 255, 255, 0.2)', 
+              borderRadius: '4px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)'
+            }} 
+          />
+        </label>
+        <label style={{ display: 'flex', flexDirection: 'column', color: 'rgba(255, 255, 255, 0.8)' }}>Email Address
+          <input 
+            value={email} 
+            onChange={e => setEmail(e.target.value)} 
+            type="email"
             style={{ 
               width: '100%', 
               marginTop: 4, 
@@ -113,7 +132,7 @@ export default function UserInfoModal({ onSubmit }: { onSubmit: (info: any) => v
           />
         </label>
         <span style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.6)', marginBottom: 8 }}>
-          We'll only use this if we need to follow up on your request.
+          We'll only use your contact information if we need to follow up on your request.
         </span>
         {error && <div style={{ color: '#ff6b6b', fontSize: 13 }}>{error}</div>}
         <button type="submit" style={{

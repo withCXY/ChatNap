@@ -12,14 +12,10 @@ export default function Home() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const { customers: supabaseCustomers, loading, error } = useCustomers();
 
-  const customers: Customer[] = supabaseCustomers.map((c) => ({
-    id: c.session_id || c.id.toString(),
-    name: c.name || 'Unknown',
-    phone: c.phone || 'N/A',
-    platform: c.platform || 'Unknown',
-    conversationSummary: c.conversationSummary,
-    interactionStage: c.interactionStage,
-    accountStatus: c.accountStatus
+  const customers: Customer[] = supabaseCustomers.map((c: any) => ({
+    ...c,
+    id: c.id ? String(c.id) : '',
+    sessionId: c.session_id ? String(c.session_id) : null,
   }));
 
   const [state, setState] = useState<DashboardState>({
@@ -118,8 +114,11 @@ export default function Home() {
   };
 
   const handleCustomerClick = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setIsChatModalOpen(true);
+    // 只有当客户有session_id时才打开聊天模态框
+    if (customer.sessionId) {
+      setSelectedCustomer(customer);
+      setIsChatModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -239,7 +238,7 @@ export default function Home() {
       <ChatHistoryModal
         isOpen={isChatModalOpen}
         onClose={handleCloseModal}
-        customerId={selectedCustomer?.id || ''}
+        customerId={selectedCustomer?.sessionId || ''}
         customerName={selectedCustomer?.name || ''}
       />
     </main>

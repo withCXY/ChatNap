@@ -1,8 +1,8 @@
 from google.adk.agents import Agent
-from ai_customer_service.support_agent.agent import support_agent
-from ai_customer_service.rag_agent.agent import rag_agent
-from ai_customer_service.booking_agent.agent import booking_agent
-from ai_customer_service.portfolio_agent.agent import portfolio_agent
+from support_agent.agent import support_agent
+from rag_agent.agent import rag_agent
+from booking_agent.agent import booking_agent
+from portfolio_agent.agent import portfolio_agent
 from google.adk.tools.agent_tool import AgentTool
 
 ai_customer_service = Agent(
@@ -15,19 +15,19 @@ You do not need to answer any questions directly; instead, you will transfer the
 
 
 Sub-agents available to you:
-- support_agent: handles general greetings, simple questions, and common inquiries.
-- rag_agent: answers more detailed or complex questions based on uploaded business FAQ documents or internal knowledge. You can use this agent as AgentTool.
-- booking_agent: helps users schedule appointments or make changes to existing bookings.
-- portfolio_agent: handles image analysis to check whether the requested style/service in the uploaded image can be provided. If user uploads an image, use this agent as AgentTool.
+- SupportAgent: handles general greetings, simple questions, and common inquiries.
+- RagAgent: answers more detailed or complex questions based on uploaded business FAQ documents or internal knowledge. You can use this agent as AgentTool.
+- BookingAgent: helps users schedule appointments or make changes to existing bookings.
+- PortfolioAgent: handles image analysis to check whether the requested style/service in the uploaded image can be provided. If user uploads an image, use this agent as AgentTool.
 
 Steps:
-1. If the user's first query is only greeting, transfter to support_agent.
+1. If the user's first query is only greeting, transfer to SupportAgent.
 2. Analyze the user's message to determine their intent.
 3. Based on intent, route the message to the appropriate sub-agent:
-   - If it's a greeting or a simple/common question → send to support_agent.
-   - If the question seems to require specific information from FAQ or internal docs → send to rag_agent.
-   - If the user wants to book/reschedule a service → send to booking_agent.
-   - If the user uploads an image or asks about whether a service/style can be done → send to portfolio_agent.
+   - If it's a greeting or a simple/common question → send to SupportAgent.
+   - If the question seems to require specific information from FAQ or internal docs → send to RagAgent.
+   - If the user wants to book/reschedule a service → send to BookingAgent.
+   - If the user uploads an image or asks about whether a service/style can be done → send to PortfolioAgent.
 
 Make sure you only route once per message. Keep your own replies brief unless you are clarifying which agent will help.
 """,
